@@ -21,8 +21,10 @@ h1{font-size:22px;font-weight:600;margin:12px 0 16px}
 input,select{flex:1;min-width:0;padding:10px 12px;border:1px solid #e0e0e5;border-radius:10px;font-size:15px;background:#f9f9fb;color:#1c1c1e;-webkit-appearance:none;appearance:none;outline:none}
 input:focus,select:focus{border-color:#007aff;background:#fff}
 input[type=number]{width:90px;flex:0 0 90px}
-.add-btn{width:100%;padding:12px;background:#007aff;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;margin-top:4px}
-.add-btn:active{background:#0062cc}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer}
+.btn-primary{background:#007aff;color:#fff}
+.btn-primary:active{background:#0062cc}
+.btn-secondary{background:#f2f2f7;color:#1c1c1e}
 .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .month-nav button{background:#f2f2f7;border:none;border-radius:8px;padding:6px 14px;font-size:15px;cursor:pointer;color:#1c1c1e}
 .month-label{font-size:16px;font-weight:500}
@@ -40,92 +42,129 @@ input[type=number]{width:90px;flex:0 0 90px}
 .tx-amt{font-size:14px;font-weight:500;white-space:nowrap}
 .tx-del{background:none;border:none;cursor:pointer;font-size:18px;color:#aeaeb2;padding:0 4px;line-height:1}
 .empty{font-size:13px;color:#aeaeb2;text-align:center;padding:20px 0}
+#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;gap:16px;text-align:center}
+#login-screen h2{font-size:22px;font-weight:600}
+#login-screen p{font-size:14px;color:#6c6c70;line-height:1.6;max-width:260px}
+#app-screen{display:none}
+.user-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.user-right{display:flex;align-items:center;gap:8px}
+.user-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.user-name{font-size:13px;color:#6c6c70;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.signout-btn{font-size:12px;color:#007aff;background:none;border:none;cursor:pointer;padding:0}
+.sync-status{font-size:11px;color:#aeaeb2;text-align:right;margin-bottom:8px;min-height:14px}
 </style>
 </head>
 <body>
-<h1>記帳工具</h1>
 
-<div class="section">
-  <div class="month-nav">
-    <button id="prev-btn">&#8592;</button>
-    <span class="month-label" id="month-label"></span>
-    <button id="next-btn">&#8594;</button>
+<div id="login-screen">
+  <h2>記帳工具</h2>
+  <p>登入 Google 帳號，讓記帳資料在所有裝置自動同步</p>
+  <button class="btn btn-primary" id="login-btn" style="width:220px">使用 Google 帳號登入</button>
+</div>
+
+<div id="app-screen">
+  <div class="user-bar">
+    <h1>記帳工具</h1>
+    <div class="user-right">
+      <img class="user-avatar" id="user-avatar" src="" alt="">
+      <span class="user-name" id="user-name"></span>
+      <button class="signout-btn" id="signout-btn">登出</button>
+    </div>
   </div>
-  <div class="stat-grid">
-    <div class="stat"><div class="stat-label">本月支出</div><div class="stat-val" id="total-amt">$0</div></div>
-    <div class="stat"><div class="stat-label">筆數</div><div class="stat-val" id="total-count">0</div></div>
+  <div class="sync-status" id="sync-status"></div>
+
+  <div class="section">
+    <div class="month-nav">
+      <button id="prev-btn">&#8592;</button>
+      <span class="month-label" id="month-label"></span>
+      <button id="next-btn">&#8594;</button>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-label">本月支出</div><div class="stat-val" id="total-amt">$0</div></div>
+      <div class="stat"><div class="stat-label">筆數</div><div class="stat-val" id="total-count">0</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">新增支出</div>
+    <div class="row">
+      <input type="text" id="inp-name" placeholder="名稱（如：午餐）" maxlength="30">
+      <input type="number" id="inp-amt" placeholder="金額" min="0" step="1" inputmode="numeric">
+    </div>
+    <div class="row">
+      <select id="inp-cat">
+        <option value="餐飲">餐飲</option>
+        <option value="交通">交通</option>
+        <option value="購物">購物</option>
+        <option value="娛樂">娛樂</option>
+        <option value="醫療">醫療</option>
+        <option value="住房">住房</option>
+        <option value="其他">其他</option>
+      </select>
+      <input type="date" id="inp-date">
+    </div>
+    <button class="btn btn-primary" id="add-btn">+ 新增</button>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">分類統計</div>
+    <div id="cat-chart"><div class="empty">尚無資料</div></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">明細</div>
+    <div id="tx-list"><div class="empty">尚無支出紀錄</div></div>
   </div>
 </div>
 
-<div class="section">
-  <div class="sec-title">新增支出</div>
-  <div class="row">
-    <input type="text" id="inp-name" placeholder="名稱（如：午餐）" maxlength="30">
-    <input type="number" id="inp-amt" placeholder="金額" min="0" step="1" inputmode="numeric">
-  </div>
-  <div class="row">
-    <select id="inp-cat">
-      <option value="餐飲">餐飲</option>
-      <option value="交通">交通</option>
-      <option value="購物">購物</option>
-      <option value="娛樂">娛樂</option>
-      <option value="醫療">醫療</option>
-      <option value="住房">住房</option>
-      <option value="其他">其他</option>
-    </select>
-    <input type="date" id="inp-date">
-  </div>
-  <button class="add-btn" id="add-btn">+ 新增</button>
-</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-<div class="section">
-  <div class="sec-title">分類統計</div>
-  <div id="cat-chart"><div class="empty">尚無資料</div></div>
-</div>
+const firebaseConfig = {
+  apiKey: "AIzaSyAzwK9SL7PN3M4LKMT7Sf25T9__7FONQu8",
+  authDomain: "my-expense-tracker-a887d.firebaseapp.com",
+  projectId: "my-expense-tracker-a887d",
+  storageBucket: "my-expense-tracker-a887d.firebasestorage.app",
+  messagingSenderId: "176945572241",
+  appId: "1:176945572241:web:7118bde939de9b095e5230"
+};
 
-<div class="section">
-  <div class="sec-title">明細</div>
-  <div id="tx-list"><div class="empty">尚無支出紀錄</div></div>
-</div>
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const CAT_COLORS = {餐飲:"#34c759",交通:"#007aff",購物:"#ff2d55",娛樂:"#5856d6",醫療:"#ff9500",住房:"#ffcc00",其他:"#8e8e93"};
 
-<script>
-const CAT_COLORS={餐飲:"#34c759",交通:"#007aff",購物:"#ff2d55",娛樂:"#5856d6",醫療:"#ff9500",住房:"#ffcc00",其他:"#8e8e93"};
-const KEY="expense-tracker";
-let records=[];
-let viewYear,viewMonth;
+let records = [];
+let viewYear, viewMonth;
+let unsubscribe = null;
 
-function today(){return new Date().toISOString().slice(0,10)}
-function fmt(n){return"$"+Math.round(n).toLocaleString()}
-function monthKey(y,m){return y+"-"+String(m+1).padStart(2,"0")}
+const fmt = n => "$" + Math.round(n).toLocaleString();
+const today = () => new Date().toISOString().slice(0,10);
+const monthKey = (y,m) => y + "-" + String(m+1).padStart(2,"0");
+const setSync = msg => document.getElementById("sync-status").textContent = msg;
+const getMonthRecs = () => records.filter(r => r.date.startsWith(monthKey(viewYear, viewMonth)));
 
-function load(){try{const d=localStorage.getItem(KEY);if(d)records=JSON.parse(d);}catch(e){records=[];}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(records));}catch(e){}}
-
-function getMonthRecords(){
-  const mk=monthKey(viewYear,viewMonth);
-  return records.filter(r=>r.date.startsWith(mk));
-}
-
-function render(){
-  document.getElementById("month-label").textContent=viewYear+"年"+(viewMonth+1)+"月";
-  const recs=getMonthRecords().sort((a,b)=>b.date.localeCompare(a.date));
-  const total=recs.reduce((s,r)=>s+r.amount,0);
-  document.getElementById("total-amt").textContent=fmt(total);
-  document.getElementById("total-count").textContent=recs.length;
-  renderCats(recs,total);
+function render() {
+  document.getElementById("month-label").textContent = viewYear + "年" + (viewMonth+1) + "月";
+  const recs = getMonthRecs().sort((a,b) => b.date.localeCompare(a.date));
+  const total = recs.reduce((s,r) => s + r.amount, 0);
+  document.getElementById("total-amt").textContent = fmt(total);
+  document.getElementById("total-count").textContent = recs.length;
+  renderCats(recs, total);
   renderList(recs);
 }
 
-function renderCats(recs,total){
-  const el=document.getElementById("cat-chart");
-  if(!recs.length){el.innerHTML='<div class="empty">尚無資料</div>';return;}
-  const map={};
-  recs.forEach(r=>{map[r.cat]=(map[r.cat]||0)+r.amount});
-  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]);
-  el.innerHTML=sorted.map(([cat,amt])=>{
-    const pct=total>0?Math.round(amt/total*100):0;
-    const col=CAT_COLORS[cat]||"#8e8e93";
-    return`<div class="cat-bar">
+function renderCats(recs, total) {
+  const el = document.getElementById("cat-chart");
+  if (!recs.length) { el.innerHTML = '<div class="empty">尚無資料</div>'; return; }
+  const map = {};
+  recs.forEach(r => { map[r.cat] = (map[r.cat]||0) + r.amount; });
+  el.innerHTML = Object.entries(map).sort((a,b) => b[1]-a[1]).map(([cat, amt]) => {
+    const pct = total > 0 ? Math.round(amt/total*100) : 0;
+    const col = CAT_COLORS[cat] || "#8e8e93";
+    return `<div class="cat-bar">
       <span class="cat-bar-label">${cat}</span>
       <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%;background:${col}"></div></div>
       <span class="cat-bar-amt">${fmt(amt)}</span>
@@ -133,52 +172,90 @@ function renderCats(recs,total){
   }).join("");
 }
 
-function renderList(recs){
-  const el=document.getElementById("tx-list");
-  if(!recs.length){el.innerHTML='<div class="empty">尚無支出紀錄</div>';return;}
-  el.innerHTML=recs.map(r=>{
-    const col=CAT_COLORS[r.cat]||"#8e8e93";
-    return`<div class="tx-item">
+function renderList(recs) {
+  const el = document.getElementById("tx-list");
+  if (!recs.length) { el.innerHTML = '<div class="empty">尚無支出紀錄</div>'; return; }
+  el.innerHTML = recs.map(r => {
+    const col = CAT_COLORS[r.cat] || "#8e8e93";
+    return `<div class="tx-item">
       <div class="tx-dot" style="background:${col}"></div>
       <div class="tx-info">
         <div class="tx-name">${r.name}</div>
         <div class="tx-meta">${r.cat} · ${r.date}</div>
       </div>
       <div class="tx-amt">${fmt(r.amount)}</div>
-      <button class="tx-del" data-id="${r.id}">&#215;</button>
+      <button class="tx-del" data-id="${r.firestoreId}">&#215;</button>
     </div>`;
   }).join("");
-  el.querySelectorAll(".tx-del").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      records=records.filter(r=>r.id!==btn.dataset.id);
-      save();render();
+  el.querySelectorAll(".tx-del").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      await deleteDoc(doc(db, "users", auth.currentUser.uid, "expenses", btn.dataset.id));
     });
   });
 }
 
-document.getElementById("add-btn").addEventListener("click",()=>{
-  const name=document.getElementById("inp-name").value.trim();
-  const amt=parseFloat(document.getElementById("inp-amt").value);
-  const cat=document.getElementById("inp-cat").value;
-  const date=document.getElementById("inp-date").value;
-  if(!name||!amt||amt<=0||!date)return;
-  records.push({id:Date.now().toString(),name,amount:amt,cat,date});
-  save();
-  document.getElementById("inp-name").value="";
-  document.getElementById("inp-amt").value="";
-  const nd=new Date(date);
-  viewYear=nd.getFullYear();viewMonth=nd.getMonth();
-  render();
+function startListening(uid) {
+  if (unsubscribe) unsubscribe();
+  setSync("連線中...");
+  const q = query(collection(db, "users", uid, "expenses"), orderBy("date", "desc"));
+  unsubscribe = onSnapshot(q,
+    snap => {
+      records = snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+      const t = new Date().toLocaleTimeString("zh-Hant", {hour:"2-digit", minute:"2-digit"});
+      setSync("已同步 " + t);
+      render();
+    },
+    () => setSync("同步失敗，請檢查網路")
+  );
+}
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("app-screen").style.display = "block";
+    document.getElementById("user-name").textContent = user.displayName || user.email;
+    document.getElementById("user-avatar").src = user.photoURL || "";
+    const now = new Date();
+    viewYear = now.getFullYear();
+    viewMonth = now.getMonth();
+    document.getElementById("inp-date").value = today();
+    startListening(user.uid);
+  } else {
+    document.getElementById("login-screen").style.display = "flex";
+    document.getElementById("app-screen").style.display = "none";
+    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    records = [];
+  }
 });
 
-document.getElementById("prev-btn").addEventListener("click",()=>{viewMonth--;if(viewMonth<0){viewMonth=11;viewYear--;}render();});
-document.getElementById("next-btn").addEventListener("click",()=>{viewMonth++;if(viewMonth>11){viewMonth=0;viewYear++;}render();});
-document.getElementById("inp-name").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("add-btn").click();});
+document.getElementById("login-btn").addEventListener("click", async () => {
+  try {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  } catch(e) {
+    alert("登入失敗：" + e.message);
+  }
+});
 
-const now=new Date();
-viewYear=now.getFullYear();viewMonth=now.getMonth();
-document.getElementById("inp-date").value=today();
-load();render();
+document.getElementById("signout-btn").addEventListener("click", () => signOut(auth));
+
+document.getElementById("add-btn").addEventListener("click", async () => {
+  const name = document.getElementById("inp-name").value.trim();
+  const amt = parseFloat(document.getElementById("inp-amt").value);
+  const cat = document.getElementById("inp-cat").value;
+  const date = document.getElementById("inp-date").value;
+  if (!name || !amt || amt <= 0 || !date) return;
+  setSync("儲存中...");
+  await addDoc(collection(db, "users", auth.currentUser.uid, "expenses"), { name, amount: amt, cat, date });
+  document.getElementById("inp-name").value = "";
+  document.getElementById("inp-amt").value = "";
+  const nd = new Date(date);
+  viewYear = nd.getFullYear();
+  viewMonth = nd.getMonth();
+});
+
+document.getElementById("prev-btn").addEventListener("click", () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } render(); });
+document.getElementById("next-btn").addEventListener("click", () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } render(); });
+document.getElementById("inp-name").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("add-btn").click(); });
 </script>
 </body>
 </html>
